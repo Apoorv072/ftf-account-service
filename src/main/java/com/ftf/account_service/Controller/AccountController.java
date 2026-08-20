@@ -26,4 +26,26 @@ public class AccountController {
                 .status(HttpStatus.CREATED)
                 .body(response);
     }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<AccountResponse> getAccountById(
+            @PathVariable Long id) {
+
+        AccountResponse response = accountService.getAccountById(id);
+
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(response);
+    }
+
+    @GetMapping("/byNumber/{accountNumber}")
+    public ResponseEntity<AccountResponse> getAccountByNumber(
+            @PathVariable String accountNumber) {
+
+        AccountResponse response = accountService.getAccountByNumber(accountNumber);
+
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(response);
+    }
 }

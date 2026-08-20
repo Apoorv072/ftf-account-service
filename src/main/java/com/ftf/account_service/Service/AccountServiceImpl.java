@@ -28,7 +28,33 @@ public class AccountServiceImpl implements AccountService {
         this.accountRepository = accountRepository;
         this.userRepository = userRepository;
     }
+    @Override
+    public AccountResponse getAccountById(Long id) {
 
+        Account account = accountRepository.findById(id)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Account not found with id: " + id
+                        )
+                );
+
+        return MapperUtility.mapToAccountResponse(account);
+    }
+
+    @Override
+    public AccountResponse getAccountByNumber(String accountNumber) {
+
+        Account account = accountRepository
+                .findByAccountNumber(accountNumber)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Account not found with account number: "
+                                        + accountNumber
+                        )
+                );
+
+        return MapperUtility.mapToAccountResponse(account);
+    }
     @Override
     public AccountResponse createAccount(AccountRequest request) {
 
