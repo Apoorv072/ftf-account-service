@@ -3,6 +3,7 @@ package com.ftf.account_service.Service;
 import com.ftf.account_service.AccountException.ResourceNotFoundException;
 import com.ftf.account_service.Dto.AccountRequest;
 import com.ftf.account_service.Dto.AccountResponse;
+import com.ftf.account_service.Dto.InternalTransferRequest;
 import com.ftf.account_service.Entity.Account;
 import com.ftf.account_service.Entity.AccountStatus;
 import com.ftf.account_service.Entity.User;
@@ -10,6 +11,7 @@ import com.ftf.account_service.Mapper.MapperUtility;
 import com.ftf.account_service.Repository.AccountRepository;
 import com.ftf.account_service.Repository.UserRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -76,6 +78,42 @@ public class AccountServiceImpl implements AccountService {
         Account savedAccount = accountRepository.save(account);
 
         return MapperUtility.mapToAccountResponse(savedAccount);
+    }
+
+    @Transactional
+    public void transfer(InternalTransferRequest request) {
+
+        if (request.getSourceAccountId()
+                .equals(request.getDestinationAccountId())) {
+
+            throw new IllegalArgumentException(
+                    "Source and destination accounts cannot be the same"
+            );
+        }
+
+        int debited = accountRepository.debitAccount(
+                request.getSourceAccountId(),
+                request.getAmount(),
+                request.getCurrency()
+        );
+
+        if (debited != 1) {
+            throw new IllegalStateException(
+                    "Unable to debit source account"
+            );
+        }
+
+        int credited = accountRepository.creditAccount(
+                request.getDestinationAccountId(),
+                request.getAmount(),
+                request.getCurrency()
+        );
+
+        if (credited != 1) {
+            throw new IllegalStateException(
+                    "Unable to credit destination account"
+            );
+        }
     }
 
     private String generateAccountNumber() {
