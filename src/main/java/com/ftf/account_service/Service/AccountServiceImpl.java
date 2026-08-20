@@ -6,6 +6,7 @@ import com.ftf.account_service.Dto.AccountResponse;
 import com.ftf.account_service.Entity.Account;
 import com.ftf.account_service.Entity.AccountStatus;
 import com.ftf.account_service.Entity.User;
+import com.ftf.account_service.Mapper.MapperUtility;
 import com.ftf.account_service.Repository.AccountRepository;
 import com.ftf.account_service.Repository.UserRepository;
 import org.springframework.stereotype.Service;
@@ -33,10 +34,7 @@ public class AccountServiceImpl implements AccountService {
 
         User user = userRepository.findById(request.getUserId())
                 .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                "User not found with id: " + request.getUserId()
-                        )
-                );
+                        new ResourceNotFoundException("User not found with id: " + request.getUserId()));
 
         Account account = new Account();
 
@@ -46,15 +44,12 @@ public class AccountServiceImpl implements AccountService {
         account.setCurrency(request.getCurrency().toUpperCase());
         account.setBalance(BigDecimal.ZERO);
         account.setStatus(AccountStatus.ACTIVE);
-
-        LocalDateTime now = LocalDateTime.now();
-
-        account.setCreatedAt(now);
-        account.setUpdatedAt(now);
+        account.setCreatedAt(LocalDateTime.now());
+        account.setUpdatedAt(LocalDateTime.now());
 
         Account savedAccount = accountRepository.save(account);
 
-        return mapToResponse(savedAccount);
+        return MapperUtility.mapToAccountResponse(savedAccount);
     }
 
     private String generateAccountNumber() {
@@ -67,20 +62,4 @@ public class AccountServiceImpl implements AccountService {
                         .toUpperCase();
     }
 
-    private AccountResponse mapToResponse(Account account) {
-
-        AccountResponse response = new AccountResponse();
-
-        response.setId(account.getId());
-        response.setAccountNumber(account.getAccountNumber());
-        response.setUserId(account.getUser().getId());
-        response.setAccountType(account.getAccountType());
-        response.setCurrency(account.getCurrency());
-        response.setBalance(account.getBalance());
-        response.setStatus(account.getStatus());
-        response.setCreatedAt(account.getCreatedAt());
-        response.setUpdatedAt(account.getUpdatedAt());
-
-        return response;
-    }
 }

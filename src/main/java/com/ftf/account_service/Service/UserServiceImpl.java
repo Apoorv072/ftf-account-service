@@ -1,23 +1,29 @@
 package com.ftf.account_service.Service;
 
-import com.ftf.account_service.AccountException.InvalidAccountException;
 import com.ftf.account_service.AccountException.ResourceAlreadyExistsException;
+import com.ftf.account_service.AccountException.ResourceNotFoundException;
+import com.ftf.account_service.Dto.AccountResponse;
 import com.ftf.account_service.Dto.UserRequest;
 import com.ftf.account_service.Dto.UserResponse;
 import com.ftf.account_service.Entity.User;
 import com.ftf.account_service.Entity.UserStatus;
+import com.ftf.account_service.Mapper.MapperUtility;
+import com.ftf.account_service.Repository.AccountRepository;
 import com.ftf.account_service.Repository.UserRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
+    private final AccountRepository accountRepository;
 
-    public UserServiceImpl(UserRepository userRepository) {
+    public UserServiceImpl(UserRepository userRepository, AccountRepository accountRepository) {
         this.userRepository = userRepository;
+        this.accountRepository = accountRepository;
     }
 
     @Override
@@ -49,29 +55,27 @@ public class UserServiceImpl implements UserService {
 
         User savedUser = userRepository.save(user);
 
-        return mapToResponse(savedUser);
+        return MapperUtility.mapToUserResponse(savedUser);
     }
 
     @Override
-    public UserResponse getById(int id) {
-        if(true)
-        throw new InvalidAccountException("Invalid User");
-        return mapToResponse(userRepository.getById(id));
+    public UserResponse getById(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "User not found with id: " + id
+                        )
+                );
+        return MapperUtility.mapToUserResponse(user);
     }
 
-    private UserResponse mapToResponse(User user) {
+    @Override
+    public List<AccountResponse> getUserAccounts(Long userId) {
 
-        UserResponse response = new UserResponse();
-
-        response.setId(user.getId());
-        response.setFirstName(user.getFirstName());
-        response.setLastName(user.getLastName());
-        response.setEmail(user.getEmail());
-        response.setPhoneNumber(user.getPhoneNumber());
-        response.setStatus(user.getStatus());
-        response.setCreatedAt(user.getCreatedAt());
-        response.setUpdatedAt(user.getUpdatedAt());
-
-        return response;
+        userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
+        return accountRepository.findByUserId(userId).stream().map(account -> MapperUtility.mapToAccountResponse(account)).toList();
     }
+
+
+
 }

@@ -127,6 +127,6 @@ public class User {
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
     }
-    // Getters and setters
+
 
 }
