@@ -1,5 +1,7 @@
 package com.ftf.account_service.Service;
 
+import com.ftf.account_service.AccountException.InvalidAccountException;
+import com.ftf.account_service.AccountException.ResourceAlreadyExistsException;
 import com.ftf.account_service.Dto.UserRequest;
 import com.ftf.account_service.Dto.UserResponse;
 import com.ftf.account_service.Entity.User;
@@ -22,12 +24,15 @@ public class UserServiceImpl implements UserService {
     public UserResponse createUser(UserRequest request) {
 
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new RuntimeException("Email already exists");
+            throw new ResourceAlreadyExistsException(
+                    "User with email " + request.getEmail() + " already exists"
+            );
         }
 
-        if (request.getPhoneNumber() != null &&
-                userRepository.existsByPhoneNumber(request.getPhoneNumber())) {
-            throw new RuntimeException("Phone number already exists");
+        if (request.getPhoneNumber() != null && userRepository.existsByPhoneNumber(request.getPhoneNumber())) {
+            throw new ResourceAlreadyExistsException(
+                    "User with Phone number " + request.getEmail() + " already exists"
+            );
         }
 
         User user = new User();
@@ -49,6 +54,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserResponse getById(int id) {
+        if(true)
+        throw new InvalidAccountException("Invalid User");
         return mapToResponse(userRepository.getById(id));
     }
 
