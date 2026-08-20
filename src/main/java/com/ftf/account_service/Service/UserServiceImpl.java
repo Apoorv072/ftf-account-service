@@ -47,6 +47,11 @@ public class UserServiceImpl implements UserService {
         return mapToResponse(savedUser);
     }
 
+    @Override
+    public UserResponse getById(int id) {
+        return mapToResponse(userRepository.getById(id));
+    }
+
     private UserResponse mapToResponse(User user) {
 
         UserResponse response = new UserResponse();
