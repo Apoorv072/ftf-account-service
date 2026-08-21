@@ -1,6 +1,7 @@
 package com.ftf.account_service.Service;
 
 import com.ftf.account_service.AccountException.ResourceNotFoundException;
+import com.ftf.account_service.Dto.AccountCreatedEvent;
 import com.ftf.account_service.Dto.AccountRequest;
 import com.ftf.account_service.Dto.AccountResponse;
 import com.ftf.account_service.Dto.InternalTransferRequest;
@@ -12,6 +13,7 @@ import com.ftf.account_service.Mapper.MapperUtility;
 import com.ftf.account_service.Repository.AccountRepository;
 import com.ftf.account_service.Repository.TransferRequestRepository;
 import com.ftf.account_service.Repository.UserRepository;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,13 +27,14 @@ public class AccountServiceImpl implements AccountService {
 
     private final AccountRepository accountRepository;
     private final UserRepository userRepository;
-
+    private final KafkaTemplate<String, AccountCreatedEvent> kafkaTemplate;
     private final TransferRequestRepository transferRequestRepository;
 
-    public AccountServiceImpl(AccountRepository accountRepository, UserRepository userRepository, TransferRequestRepository transferRequestRepository ) {
+    public AccountServiceImpl(AccountRepository accountRepository, UserRepository userRepository, TransferRequestRepository transferRequestRepository, KafkaTemplate<String, AccountCreatedEvent> kafkaTemplate ) {
         this.transferRequestRepository = transferRequestRepository;
         this.accountRepository = accountRepository;
         this.userRepository = userRepository;
+        this.kafkaTemplate = kafkaTemplate;
     }
     @Override
     public AccountResponse getAccountById(Long id) {
@@ -70,7 +73,10 @@ public class AccountServiceImpl implements AccountService {
 
         Account savedAccount = accountRepository.save(account);
 
-        return MapperUtility.mapToAccountResponse(savedAccount);
+        AccountCreatedEvent accountCreatedEvent = MapperUtility.mapToAccountCreatedEvent(savedAccount);
+        kafkaTemplate.send("account-created",accountCreatedEvent);
+
+    return MapperUtility.mapToAccountResponse(savedAccount);
     }
 
     @Transactional
