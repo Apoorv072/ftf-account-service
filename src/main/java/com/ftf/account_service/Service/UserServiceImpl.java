@@ -61,11 +61,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserResponse getById(Long id) {
         User user = userRepository.findById(id)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                "User not found with id: " + id
-                        )
-                );
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
         return MapperUtility.mapToUserResponse(user);
     }
 

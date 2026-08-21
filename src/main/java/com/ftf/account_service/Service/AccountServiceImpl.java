@@ -6,15 +6,18 @@ import com.ftf.account_service.Dto.AccountResponse;
 import com.ftf.account_service.Dto.InternalTransferRequest;
 import com.ftf.account_service.Entity.Account;
 import com.ftf.account_service.Entity.AccountStatus;
+import com.ftf.account_service.Entity.TransferRequest;
 import com.ftf.account_service.Entity.User;
 import com.ftf.account_service.Mapper.MapperUtility;
 import com.ftf.account_service.Repository.AccountRepository;
+import com.ftf.account_service.Repository.TransferRequestRepository;
 import com.ftf.account_service.Repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -23,10 +26,10 @@ public class AccountServiceImpl implements AccountService {
     private final AccountRepository accountRepository;
     private final UserRepository userRepository;
 
-    public AccountServiceImpl(
-            AccountRepository accountRepository,
-            UserRepository userRepository) {
+    private final TransferRequestRepository transferRequestRepository;
 
+    public AccountServiceImpl(AccountRepository accountRepository, UserRepository userRepository, TransferRequestRepository transferRequestRepository ) {
+        this.transferRequestRepository = transferRequestRepository;
         this.accountRepository = accountRepository;
         this.userRepository = userRepository;
     }
@@ -34,11 +37,7 @@ public class AccountServiceImpl implements AccountService {
     public AccountResponse getAccountById(Long id) {
 
         Account account = accountRepository.findById(id)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                "Account not found with id: " + id
-                        )
-                );
+                .orElseThrow(() -> new ResourceNotFoundException("Account not found with id: " + id));
 
         return MapperUtility.mapToAccountResponse(account);
     }
@@ -46,14 +45,8 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public AccountResponse getAccountByNumber(String accountNumber) {
 
-        Account account = accountRepository
-                .findByAccountNumber(accountNumber)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                "Account not found with account number: "
-                                        + accountNumber
-                        )
-                );
+        Account account = accountRepository.findByAccountNumber(accountNumber)
+                .orElseThrow(() -> new ResourceNotFoundException("Account not found with account number: " + accountNumber));
 
         return MapperUtility.mapToAccountResponse(account);
     }
@@ -83,36 +76,32 @@ public class AccountServiceImpl implements AccountService {
     @Transactional
     public void transfer(InternalTransferRequest request) {
 
-        if (request.getSourceAccountId()
-                .equals(request.getDestinationAccountId())) {
 
-            throw new IllegalArgumentException(
-                    "Source and destination accounts cannot be the same"
-            );
+        Optional<TransferRequest> existingRequest = transferRequestRepository.findByTransactionReference(request.getTransactionReference());
+
+        if (existingRequest.isPresent()) {
+
+            if ("COMPLETED".equals(existingRequest.get().getStatus())) {
+                return;
+            }
+
+            throw new IllegalStateException("Transfer already exists with status: " + existingRequest.get().getStatus());
         }
 
-        int debited = accountRepository.debitAccount(
-                request.getSourceAccountId(),
-                request.getAmount(),
-                request.getCurrency()
-        );
+        if (request.getSourceAccountId().equals(request.getDestinationAccountId())) {
+            throw new IllegalArgumentException("Source and destination accounts cannot be the same");
+        }
+
+        int debited = accountRepository.debitAccount(request.getSourceAccountId(), request.getAmount(), request.getCurrency());
 
         if (debited != 1) {
-            throw new IllegalStateException(
-                    "Unable to debit source account"
-            );
+            throw new IllegalStateException("Unable to debit source account");
         }
 
-        int credited = accountRepository.creditAccount(
-                request.getDestinationAccountId(),
-                request.getAmount(),
-                request.getCurrency()
-        );
+        int credited = accountRepository.creditAccount(request.getDestinationAccountId(), request.getAmount(), request.getCurrency());
 
         if (credited != 1) {
-            throw new IllegalStateException(
-                    "Unable to credit destination account"
-            );
+            throw new IllegalStateException("Unable to credit destination account");
         }
     }
 

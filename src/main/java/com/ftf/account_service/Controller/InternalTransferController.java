@@ -20,8 +20,7 @@ public class InternalTransferController {
         this.accountService=accountService;
     }
     @PostMapping("/internal/transfers")
-    public ResponseEntity<Void> transfer(
-            @Valid @RequestBody InternalTransferRequest request) {
+    public ResponseEntity<Void> transfer(@Valid @RequestBody InternalTransferRequest request) {
 
         accountService.transfer(request);
 
