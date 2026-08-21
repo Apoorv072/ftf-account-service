@@ -3,6 +3,7 @@ package com.ftf.account_service.Service;
 import com.ftf.account_service.AccountException.ResourceAlreadyExistsException;
 import com.ftf.account_service.AccountException.ResourceNotFoundException;
 import com.ftf.account_service.Dto.AccountResponse;
+import com.ftf.account_service.Dto.LoginRequest;
 import com.ftf.account_service.Dto.UserRequest;
 import com.ftf.account_service.Dto.UserResponse;
 import com.ftf.account_service.Entity.User;
@@ -10,10 +11,13 @@ import com.ftf.account_service.Entity.UserStatus;
 import com.ftf.account_service.Mapper.MapperUtility;
 import com.ftf.account_service.Repository.AccountRepository;
 import com.ftf.account_service.Repository.UserRepository;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -21,9 +25,11 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final AccountRepository accountRepository;
 
-    public UserServiceImpl(UserRepository userRepository, AccountRepository accountRepository) {
+    private final PasswordEncoder passwordEncoder;
+    public UserServiceImpl(UserRepository userRepository, AccountRepository accountRepository,PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.accountRepository = accountRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -48,7 +54,7 @@ public class UserServiceImpl implements UserService {
         user.setEmail(request.getEmail());
         user.setPhoneNumber(request.getPhoneNumber());
         user.setStatus(UserStatus.ACTIVE);
-
+        user.setPasswordHash( passwordEncoder.encode(request.getPassword()));    //  Generates the hash code of the password
         LocalDateTime now = LocalDateTime.now();
         user.setCreatedAt(now);
         user.setUpdatedAt(now);
@@ -72,6 +78,16 @@ public class UserServiceImpl implements UserService {
         return accountRepository.findByUserId(userId).stream().map(account -> MapperUtility.mapToAccountResponse(account)).toList();
     }
 
+    @Override
+    public String userLogin(LoginRequest request) {
+        Optional<User> user = userRepository.findByEmail(request.getEmail());
+       if(user.isPresent()){
+            if (!passwordEncoder.matches(request.getPassword(), user.get().getPasswordHash()))
+             return "Login Failed";
+           return "Login Successful";
+       }
+      return "Login Failed";
+    }
 
 
 }

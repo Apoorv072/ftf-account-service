@@ -40,6 +40,8 @@ public class User {
     @OneToMany(mappedBy = "user")
     private List<Account> accounts = new ArrayList<>();
 
+    @Column(name = "password_hash", nullable = false)
+    private String passwordHash;
     public Long getId() {
         return id;
     }
@@ -111,6 +113,15 @@ public class User {
     public void setAccounts(List<Account> accounts) {
         this.accounts = accounts;
     }
+
+    public String getPasswordHash() {
+        return passwordHash;
+    }
+
+    public void setPasswordHash(String passwordHash) {
+        this.passwordHash = passwordHash;
+    }
+
     public User(){}
     public User(
             String firstName,

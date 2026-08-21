@@ -1,10 +1,7 @@
 package com.ftf.account_service.Service;
 
 import com.ftf.account_service.AccountException.ResourceNotFoundException;
-import com.ftf.account_service.Dto.AccountCreatedEvent;
-import com.ftf.account_service.Dto.AccountRequest;
-import com.ftf.account_service.Dto.AccountResponse;
-import com.ftf.account_service.Dto.InternalTransferRequest;
+import com.ftf.account_service.Dto.*;
 import com.ftf.account_service.Entity.Account;
 import com.ftf.account_service.Entity.AccountStatus;
 import com.ftf.account_service.Entity.TransferRequest;
@@ -111,7 +108,7 @@ public class AccountServiceImpl implements AccountService {
         }
     }
 
-    private String generateAccountNumber() {
+     private String generateAccountNumber() {
 
         return "FTF-" +
                 UUID.randomUUID()

@@ -1,6 +1,7 @@
 package com.ftf.account_service.Controller;
 
 import com.ftf.account_service.Dto.AccountResponse;
+import com.ftf.account_service.Dto.LoginRequest;
 import com.ftf.account_service.Dto.UserRequest;
 import com.ftf.account_service.Dto.UserResponse;
 import com.ftf.account_service.Entity.Account;
@@ -49,5 +50,12 @@ public class UserController {
         List<AccountResponse> accounts =  userService.getUserAccounts(id);
 
         return ResponseEntity.status(HttpStatus.OK).body(accounts);
+    }
+    @PostMapping("/login")
+    public ResponseEntity<String> userLogin(@RequestBody LoginRequest request)
+    {
+        String response = userService.userLogin(request);
+
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 }

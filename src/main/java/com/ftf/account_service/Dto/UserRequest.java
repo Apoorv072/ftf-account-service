@@ -22,8 +22,18 @@ public class UserRequest {
 
     @Pattern(regexp = "^[0-9]{10}$", message = "Phone number must contain 10 digits")
     private String phoneNumber;
-
+    @NotBlank
+    @Size(min = 8, message = "Password must have at least eight characters")
+    private String password;
     // getters and setters
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
 
     public String getFirstName() {
         return firstName;
