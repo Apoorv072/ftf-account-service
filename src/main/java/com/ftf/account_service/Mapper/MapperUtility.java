@@ -12,6 +12,7 @@ public class MapperUtility {
     private MapperUtility() {}
     public static AccountResponse mapToAccountResponse(Account account) {
         AccountResponse response = new AccountResponse();
+
         response.setId(account.getId());
         response.setAccountNumber(account.getAccountNumber());
         response.setUserId(account.getUser().getId());
@@ -21,6 +22,7 @@ public class MapperUtility {
         response.setStatus(account.getStatus());
         response.setCreatedAt(account.getCreatedAt());
         response.setUpdatedAt(account.getUpdatedAt());
+
         return response;
     }
     public static UserResponse mapToUserResponse(User user) {

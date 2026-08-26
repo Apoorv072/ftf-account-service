@@ -23,7 +23,6 @@ public class InternalTransferRequest {
     @NotNull
     private String transactionReference;
 
-    // getters and setters
 
     public Long getSourceAccountId() {
         return sourceAccountId;

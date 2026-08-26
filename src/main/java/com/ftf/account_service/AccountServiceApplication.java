@@ -5,7 +5,7 @@ import com.ftf.account_service.Entity.User;
 import com.ftf.account_service.Entity.UserStatus;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.kafka.annotation.EnableKafka;
+
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;

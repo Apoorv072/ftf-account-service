@@ -34,9 +34,9 @@ public class TransferRequest {
 
     @Column(nullable = false, length = 3)
     private String currency;
-
-    @Column(nullable = false, length = 20)
-    private String status;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private TransactionStatus status;
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
