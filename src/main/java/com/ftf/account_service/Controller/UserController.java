@@ -1,10 +1,6 @@
 package com.ftf.account_service.Controller;
 
-import com.ftf.account_service.Dto.AccountResponse;
-import com.ftf.account_service.Dto.LoginRequest;
-import com.ftf.account_service.Dto.UserRequest;
-import com.ftf.account_service.Dto.UserResponse;
-import com.ftf.account_service.Entity.Account;
+import com.ftf.account_service.Dto.*;
 import com.ftf.account_service.Service.UserService;
 import jakarta.validation.Valid;
 
@@ -24,7 +20,7 @@ public class UserController {
         this.userService = userService;
     }
 
-    @PostMapping
+    @PostMapping("/signup")
     public ResponseEntity<UserResponse> createUser(@Valid @RequestBody UserRequest request) {
 
         UserResponse response = userService.createUser(request);
@@ -52,10 +48,11 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.OK).body(accounts);
     }
     @PostMapping("/login")
-    public ResponseEntity<String> userLogin(@RequestBody LoginRequest request)
+    public ResponseEntity<?> userLogin(@RequestBody LoginRequest request)
     {
-        String response = userService.userLogin(request);
-
+        LoginResponse response = userService.userLogin(request);
+        if (response==null)
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid usernsme or password");
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 }

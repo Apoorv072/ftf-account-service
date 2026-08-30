@@ -2,10 +2,7 @@ package com.ftf.account_service.Service;
 
 import com.ftf.account_service.AccountException.ResourceAlreadyExistsException;
 import com.ftf.account_service.AccountException.ResourceNotFoundException;
-import com.ftf.account_service.Dto.AccountResponse;
-import com.ftf.account_service.Dto.LoginRequest;
-import com.ftf.account_service.Dto.UserRequest;
-import com.ftf.account_service.Dto.UserResponse;
+import com.ftf.account_service.Dto.*;
 import com.ftf.account_service.Entity.User;
 import com.ftf.account_service.Entity.UserStatus;
 import com.ftf.account_service.Mapper.MapperUtility;
@@ -13,7 +10,6 @@ import com.ftf.account_service.Repository.AccountRepository;
 import com.ftf.account_service.Repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestBody;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -24,12 +20,13 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final AccountRepository accountRepository;
-
     private final PasswordEncoder passwordEncoder;
-    public UserServiceImpl(UserRepository userRepository, AccountRepository accountRepository,PasswordEncoder passwordEncoder) {
+    private final JwtService jwtService;
+    public UserServiceImpl(UserRepository userRepository, AccountRepository accountRepository,PasswordEncoder passwordEncoder, JwtService jwtService) {
         this.userRepository = userRepository;
         this.accountRepository = accountRepository;
         this.passwordEncoder = passwordEncoder;
+        this.jwtService = jwtService;
     }
 
     @Override
@@ -79,15 +76,16 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public String userLogin(LoginRequest request) {
+    public LoginResponse userLogin(LoginRequest request) {
         Optional<User> user = userRepository.findByEmail(request.getEmail());
-       if(user.isPresent()){
-            if (!passwordEncoder.matches(request.getPassword(), user.get().getPasswordHash()))
-             return "Login Failed";
-           return "Login Successful";
-       }
-      return "Login Failed";
+        LoginResponse response = new LoginResponse();
+        if (user.isPresent()) {
+            if (passwordEncoder.matches(request.getPassword(), user.get().getPasswordHash())) {
+                response.setToken(jwtService.generateJwtToken(user.get()));
+                response.setTokenType("Bearer");
+                return response;
+            }
+        }
+        return null;
     }
-
-
 }
