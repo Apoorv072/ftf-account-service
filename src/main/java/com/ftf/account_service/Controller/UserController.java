@@ -21,9 +21,9 @@ public class UserController {
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<UserResponse> createUser(@Valid @RequestBody UserRequest request) {
+    public ResponseEntity<String > createUser(@Valid @RequestBody UserRequest request) {
 
-        UserResponse response = userService.createUser(request);
+        String  response = userService.createUser(request);
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)
@@ -54,5 +54,14 @@ public class UserController {
         if (response==null)
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid usernsme or password");
         return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @PostMapping("/verify-otp")
+    public ResponseEntity<UserResponse> verifyOtp(
+            @RequestBody VerifyOtpRequest request) {
+        System.out.println("VERIFY OTP CONTROLLER HIT");
+        return ResponseEntity.ok(
+                userService.verifyOtp(request)
+        );
     }
 }

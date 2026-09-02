@@ -1,0 +1,10 @@
+package com.ftf.account_service.Dto;
+
+import lombok.Data;
+
+@Data
+public class VerifyOtpRequest
+{
+    private String email;
+    private String otp;
+}
